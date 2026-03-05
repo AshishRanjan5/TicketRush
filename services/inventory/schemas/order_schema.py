@@ -1,7 +1,7 @@
 from pydantic import BaseModel, ConfigDict
 from uuid import UUID
 from datetime import datetime
-from services.inventory.enums import status
+from services.inventory.domains.enums import status
 
 
 class OrderBase(BaseModel):

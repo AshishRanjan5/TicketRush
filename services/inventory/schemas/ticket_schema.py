@@ -1,8 +1,8 @@
 from pydantic import BaseModel, Field, ConfigDict
-from typing import Optional
 from uuid import UUID
 from datetime import datetime
-from services.inventory.enums import status
+from typing import Optional
+from services.inventory.domains.enums import status
 
 class TicketBase(BaseModel):
     event_id: UUID
@@ -20,5 +20,6 @@ class TicketResponse(TicketBase):
     # These are Optional because an 'Available' ticket has no user or reservation time yet
     user_id: Optional[UUID] = None
     reserved_at: Optional[datetime] = None
-    
+
     model_config = ConfigDict(from_attributes=True)
+    
