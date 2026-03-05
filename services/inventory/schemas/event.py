@@ -1,28 +1,29 @@
-from pydantic import BaseModel, field_validator, Field
+from pydantic import BaseModel, Field, ConfigDict
+from typing import Optional
 from uuid import UUID
-from datetime import datetime, timezone
+from datetime import datetime
 from enum import Enum
 
-class Venue(str, Enum):
-    BANGALORE = "Bangalore"
-    DELHI = "Delhi"
-    HYDERABAD = "Hyderabad"
-    MUMBAI = "Mumbai"
+class TicketStatus(str, Enum):
+    AVAILABLE = "Available"
+    RESERVED = "Reserved"
+    BOOKED = "Booked"
 
-class Event(BaseModel):
+class TicketBase(BaseModel):
+    event_id: UUID
+    seat_number: int = Field(gt=0)
+    price: float = Field(ge=0)
+
+class TicketCreate(TicketBase):
+    # When an admin creates a ticket, it defaults to Available.
+    # No user_id or reserved_at is expected in the creation payload.
+    status: TicketStatus = TicketStatus.AVAILABLE
+
+class TicketResponse(TicketBase):
     id: UUID
-    name: str = Field(min_length=1)
-    venue: Venue
-    date: datetime
-    capacity: int = Field(gt=0)
-
-    @field_validator("date")
-    @classmethod
-    def validate_date(cls, value):
-        if value < datetime.now(timezone.utc):
-            raise ValueError("Events date should be in future")
-        
-        return value
+    status: TicketStatus
+    # These are Optional because an 'Available' ticket has no user or reservation time yet
+    user_id: Optional[UUID] = None
+    reserved_at: Optional[datetime] = None
     
-
-
+    model_config = ConfigDict(from_attributes=True)
