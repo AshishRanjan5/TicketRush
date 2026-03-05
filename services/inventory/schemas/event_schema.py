@@ -1,24 +1,28 @@
-from pydantic import BaseModel, Field, ConfigDict
-from typing import Optional
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 from uuid import UUID
-from datetime import datetime
-from services.inventory.domains.enums import status
+from datetime import datetime, timezone
+from inventory.domains.enums.venue import Venue
 
-class TicketBase(BaseModel):
-    event_id: UUID
-    seat_number: int = Field(gt=0)
-    price: float = Field(ge=0)
+# 1. Base Schema (Shared attributes)
+class EventBase(BaseModel):
+    name: str = Field(min_length=1)
+    venue: Venue
+    date: datetime
+    capacity: int = Field(gt=0)
 
-class TicketCreate(TicketBase):
-    # When an admin creates a ticket, it defaults to Available.
-    # No user_id or reserved_at is expected in the creation payload.
-    status: status.TicketStatus = status.TicketStatus.AVAILABLE
+    @field_validator("date")
+    @classmethod
+    def validate_date(cls, value):
+        if value < datetime.now(timezone.utc):
+            raise ValueError("Event date must be in the future")
+        return value
 
-class TicketResponse(TicketBase):
+# 2. Create Schema (What the admin sends to create an event)
+class EventCreate(EventBase):
+    pass
+
+# 3. Response Schema (What the API returns to the frontend)
+class EventResponse(EventBase):
     id: UUID
-    status: status.TicketStatus
-    # These are Optional because an 'Available' ticket has no user or reservation time yet
-    user_id: Optional[UUID] = None
-    reserved_at: Optional[datetime] = None
     
     model_config = ConfigDict(from_attributes=True)
