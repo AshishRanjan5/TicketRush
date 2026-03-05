@@ -1,12 +1,8 @@
 from pydantic import BaseModel, ConfigDict
 from uuid import UUID
 from datetime import datetime
-from enum import Enum
+from services.inventory.enums import status
 
-class OrderStatus(str, Enum):
-    PENDING = "Pending"
-    COMPLETED = "Completed"
-    FAILED = "Failed"
 
 class OrderBase(BaseModel):
     ticket_id: UUID
@@ -19,7 +15,7 @@ class OrderCreate(OrderBase):
 class OrderResponse(OrderBase):
     id: UUID
     user_id: UUID
-    status: OrderStatus
+    status: status.OrderStatus
     created_at: datetime
     
     model_config = ConfigDict(from_attributes=True)

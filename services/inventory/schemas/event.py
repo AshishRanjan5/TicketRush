@@ -2,12 +2,7 @@ from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional
 from uuid import UUID
 from datetime import datetime
-from enum import Enum
-
-class TicketStatus(str, Enum):
-    AVAILABLE = "Available"
-    RESERVED = "Reserved"
-    BOOKED = "Booked"
+from services.inventory.enums import status
 
 class TicketBase(BaseModel):
     event_id: UUID
@@ -17,11 +12,11 @@ class TicketBase(BaseModel):
 class TicketCreate(TicketBase):
     # When an admin creates a ticket, it defaults to Available.
     # No user_id or reserved_at is expected in the creation payload.
-    status: TicketStatus = TicketStatus.AVAILABLE
+    status: status.TicketStatus = status.TicketStatus.AVAILABLE
 
 class TicketResponse(TicketBase):
     id: UUID
-    status: TicketStatus
+    status: status.TicketStatus
     # These are Optional because an 'Available' ticket has no user or reservation time yet
     user_id: Optional[UUID] = None
     reserved_at: Optional[datetime] = None
